@@ -42,7 +42,7 @@ public class CupidApiClient {
 
     public Mono<JsonNode> fetchProperty(long hotelId) {
         log.info("Fetching property data for hotel ID: {}", hotelId);
-        
+
         return webClient.get()
                 .uri(uriBuilder -> {
                     String path = "/property/" + hotelId;
@@ -53,34 +53,20 @@ public class CupidApiClient {
                     log.info("Request headers: {}", headers);
                 })
                 .retrieve()
-                .onStatus(status -> status.isError(), 
-                    response -> {
-                        log.error("HTTP error {} for hotel ID: {}", response.statusCode(), hotelId);
-                        return response.bodyToMono(String.class)
-                            .flatMap(body -> {
-                                log.error("Error response body: {}", body);
-                                return Mono.error(new RuntimeException("HTTP " + response.statusCode() + ": " + body));
-                            });
-                    })
-                .bodyToMono(String.class)
-                .doOnNext(rawResponse -> log.info("Raw HTTP response for hotel ID {}: {}", hotelId, rawResponse))
-                .flatMap(rawResponse -> {
-                    try {
-                        log.info("Attempting to parse JSON response for hotel ID: {}", hotelId);
-                        JsonNode jsonNode = objectMapper.readTree(rawResponse);
-                        log.info("Successfully parsed JSON for hotel ID: {}", hotelId);
-                        return Mono.just(jsonNode);
-                    } catch (Exception e) {
-                        log.error("Failed to parse JSON response for hotel ID: {}", hotelId, e);
-                        log.error("Raw response that failed to parse: {}", rawResponse);
-                        return Mono.error(new RuntimeException("JSON parsing failed", e));
-                    }
-                })
+                .onStatus(status -> status.isError(),
+                        response -> {
+                            log.error("HTTP error {} for hotel ID: {}", response.statusCode(), hotelId);
+                            return response.bodyToMono(String.class)
+                                    .flatMap(body -> {
+                                        log.error("Error response body: {}", body);
+                                        return Mono.error(new RuntimeException("HTTP " + response.statusCode() + ": " + body));
+                                    });
+                        })
+                .bodyToMono(JsonNode.class)
                 .timeout(Duration.ofSeconds(30))
                 .retryWhen(Retry.backoff(3, Duration.ofSeconds(1)))
                 .doOnSuccess(response -> log.info("Successfully fetched property data for hotel ID: {}. Response: {}", hotelId, response))
-                .doOnError(error -> log.error("Failed to fetch property data for hotel ID: {}", hotelId, error))
-                .doOnNext(response -> log.info("Final parsed response for hotel ID {}: {}", hotelId, response));
+                .doOnError(error -> log.error("Failed to fetch property data for hotel ID: {}", hotelId, error));
     }
 
     public Mono<JsonNode> fetchTranslation(long hotelId, String lang) {

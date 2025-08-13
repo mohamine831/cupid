@@ -2,6 +2,8 @@ package com.example.cupid.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,16 +17,16 @@ public class Review {
 
     @Column(name = "hotel_id")
     private Long hotelId;
-    
+
     @Column(name = "average_score")
     private BigDecimal averageScore;
-    
+
     @Column(name = "country")
     private String country;
-    
+
     @Column(name = "type")
     private String type;
-    
+
     @Column(name = "name")
     private String name;
 
@@ -33,7 +35,7 @@ public class Review {
 
     @Column(name = "headline")
     private String headline;
-    
+
     @Column(name = "language")
     private String language;
 
@@ -46,6 +48,7 @@ public class Review {
     @Column(name = "source")
     private String source;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String rawJson;
 }
