@@ -12,17 +12,37 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         use_sql_comments: true
-    show-sql: true
-    log-sql-parameters: true
+        # Performance optimizations
+        jdbc.batch_size: 20
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+    show-sql: false  # Disable SQL logging in production
+    log-sql-parameters: false  # Disable parameter logging in production
+  # Cache configuration (defaults to in-memory)
+  cache:
+    type: simple
+    cache-names: properties,hotels,reviews,translations
+
+# Actuator configuration for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,caches
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:
-    com.example.cupid: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.transaction: DEBUG
-    org.springframework.orm.jpa: DEBUG
+    com.example.cupid: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN  # Only log SQL warnings in production
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    org.springframework.transaction: WARN
+    org.springframework.orm.jpa: WARN
+    org.springframework.cache: DEBUG  # Enable cache logging for debugging
 
 flyway:
   enabled: true
