@@ -31,6 +31,7 @@ public class PropertyPhoto {
     @Column(name = "main_photo")
     private Boolean mainPhoto;
 
+    @Column(name = "score")
     private BigDecimal score;
 
     @Column(name = "class_id")

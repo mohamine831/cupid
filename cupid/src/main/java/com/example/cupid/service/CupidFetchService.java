@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -152,6 +153,12 @@ public class CupidFetchService {
                 photo.setProperty(p);
                 photo.setUrl(photoNode.has("url") ? photoNode.get("url").asText() : null);
                 photo.setHdUrl(photoNode.has("hd_url") ? photoNode.get("hd_url").asText() : null);
+                photo.setImageDescription(photoNode.has("image_description") ? photoNode.get("image_description").asText() : null);
+                photo.setImageClass1(photoNode.has("image_class1") ? photoNode.get("image_class1").asText() : null);
+                photo.setMainPhoto(photoNode.has("main_photo") ? photoNode.get("main_photo").asBoolean() : null);
+                photo.setScore(photoNode.has("score") ? BigDecimal.valueOf(photoNode.get("score").asLong())  : null);
+                photo.setClassId(photoNode.has("class_id") ? photoNode.get("class_id").asInt() : null);
+                photo.setClassOrder(photoNode.has("class_order") ? photoNode.get("class_order").asInt() : null);
                 p.getPhotos().add(photo);
             }
         }
@@ -180,7 +187,7 @@ public class CupidFetchService {
             for (JsonNode facilityNode : data.get("facilities")) {
                 PropertyFacility facility = new PropertyFacility();
                 facility.setProperty(p);
-                facility.setFacilityId(facilityNode.has("id") ? facilityNode.get("id").asInt() : null);
+                facility.setFacilityId(facilityNode.has("facility_id") ? facilityNode.get("facility_id").asInt() : null);
                 facility.setFacilityName(facilityNode.has("name") ? facilityNode.get("name").asText() : null);
                 p.getFacilities().add(facility);
             }
