@@ -1,0 +1,4 @@
+ALTER TABLE room_photo
+ADD COLUMN class_id INTEGER,
+ADD COLUMN image_class1 VARCHAR(255),
+ADD COLUMN class_order INTEGER;

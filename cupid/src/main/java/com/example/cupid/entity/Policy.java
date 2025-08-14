@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "property_amenity")
+@Table(name = "policy")
 @Data
-public class PropertyAmenity {
+public class Policy {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,9 +15,12 @@ public class PropertyAmenity {
     @JoinColumn(name = "hotel_id")
     private Property property;
 
-    @Column(name = "amenity_id")
-    private Integer amenityId;
+    @Column(name = "policy_type")
+    private String policyType;
 
-    @Column(name = "amenity_name")
-    private String amenityName;
+    @Column(name = "name")
+    private String name;
+
+    @Column(columnDefinition = "text")
+    private String description;
 }

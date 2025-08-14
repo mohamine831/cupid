@@ -25,8 +25,18 @@ public class RoomPhoto {
     @Column(name = "image_description")
     private String imageDescription;
 
+    @Column(name = "image_class1")
+    private String imageClass1;
+
     @Column(name = "main_photo")
     private Boolean mainPhoto;
 
+    @Column(name = "score")
     private BigDecimal score;
+
+    @Column(name = "class_id")
+    private Integer classId;
+
+    @Column(name = "class_order")
+    private Integer classOrder;
 }

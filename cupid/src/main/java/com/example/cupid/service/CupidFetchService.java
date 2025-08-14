@@ -29,8 +29,10 @@ public class CupidFetchService {
     private final ReviewRepository reviewRepository;
     private final PropertyPhotoRepository propertyPhotoRepository;
     private final RoomPhotoRepository roomPhotoRepository;
-    private final PropertyAmenityRepository propertyAmenityRepository;
     private final PropertyFacilityRepository propertyFacilityRepository;
+    private final RoomRepository roomRepository;
+    private final RoomAmenityRepository roomAmenityRepository;
+    private final PolicyRepository policyRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
@@ -54,31 +56,23 @@ public class CupidFetchService {
             log.info("Property data for hotel ID {}: {}", hotelId, data);
 
             Property p = mapProperty(data);
-            Property savedProperty = propertyRepository.save(p);
-            log.info("Saved property: {} with hotel ID: {}", savedProperty.getName(), savedProperty.getHotelId());
 
             // translations
+            if (p.getTranslations() != null) {
+                p.getTranslations().clear();
+            } else {
+                p.setTranslations(new ArrayList<>());
+            }
             for (String lang : new String[]{"fr", "es"}) {
                 try {
                     JsonNode tnode = apiClient.fetchTranslation(hotelId, lang).block();
-                    if (tnode != null && tnode != null && !tnode.isNull()) {
+                    if (tnode != null && !tnode.isNull()) {
                         PropertyTranslation tr = new PropertyTranslation();
-                        tr.setHotelId(hotelId);
+                        tr.setProperty(p);
                         tr.setLang(lang);
-                        JsonNode td = tnode;
-                        tr.setDescriptionHtml(td.has("description") ? td.get("description").asText() : null);
-                        tr.setMarkdownDescription(td.has("markdown_description") ? td.get("markdown_description").asText() : null);
-                        translationRepository.findByHotelIdAndLang(hotelId, lang)
-                                .ifPresentOrElse(existing -> {
-                                    existing.setDescriptionHtml(tr.getDescriptionHtml());
-                                    existing.setMarkdownDescription(tr.getMarkdownDescription());
-                                    existing.setFetchedAt(Instant.now());
-                                    PropertyTranslation savedTranslation = translationRepository.save(existing);
-                                    log.info("Updated translation for hotel ID: {} and language: {}", savedTranslation.getHotelId(), savedTranslation.getLang());
-                                }, () -> {
-                                    PropertyTranslation savedTranslation = translationRepository.save(tr);
-                                    log.info("Saved new translation for hotel ID: {} and language: {}", savedTranslation.getHotelId(), savedTranslation.getLang());
-                                });
+                        tr.setDescriptionHtml(tnode.has("description") ? tnode.get("description").asText() : null);
+                        tr.setMarkdownDescription(tnode.has("markdown_description") ? tnode.get("markdown_description").asText() : null);
+                        p.getTranslations().add(tr);
                     } else {
                         log.debug("No translation data found for hotel ID: {} and language: {}", hotelId, lang);
                     }
@@ -88,22 +82,23 @@ public class CupidFetchService {
             }
 
             // reviews
+            if (p.getReviews() != null) {
+                p.getReviews().clear();
+            } else {
+                p.setReviews(new ArrayList<>());
+            }
             try {
                 JsonNode rnode = apiClient.fetchReviews(hotelId, reviewsToFetch).block();
-                if (rnode != null && rnode != null && rnode.isArray()) {
-                    Iterator<JsonNode> it = rnode.elements();
-                    int reviewCount = 0;
-                    while (it.hasNext()) {
-                        JsonNode rn = it.next();
+                if (rnode != null && rnode.isArray()) {
+                    for (JsonNode rn : rnode) {
                         Review review = new Review();
-                        review.setHotelId(hotelId);
+                        review.setProperty(p);
                         if (rn.has("average_score")) review.setAverageScore(rn.get("average_score").decimalValue());
                         review.setCountry(rn.has("country") ? rn.get("country").asText() : null);
                         review.setType(rn.has("type") ? rn.get("type").asText() : null);
                         review.setName(rn.has("name") ? rn.get("name").asText() : null);
                         if (rn.has("date")) {
                             String ds = rn.get("date").asText();
-                            // attempt parse: yyyy-MM-dd HH:mm:ss
                             try {
                                 LocalDateTime ldt = LocalDateTime.parse(ds.replace(" ", "T"));
                                 review.setReviewDate(ldt.toInstant(ZoneOffset.UTC));
@@ -119,11 +114,9 @@ public class CupidFetchService {
                         try {
                             review.setRawJson(objectMapper.writeValueAsString(rn));
                         } catch (Exception ignored) {}
-                        Review savedReview = reviewRepository.save(review);
-                        reviewCount++;
-                        log.debug("Saved review ID: {} for hotel ID: {}", savedReview.getId(), savedReview.getHotelId());
+                        p.getReviews().add(review);
                     }
-                    log.info("Saved {} reviews for hotel ID: {}", reviewCount, hotelId);
+                    log.info("Saved {} reviews for hotel ID: {}", p.getReviews().size(), hotelId);
                 } else {
                     log.debug("No review data found for hotel ID: {}", hotelId);
                 }
@@ -131,6 +124,7 @@ public class CupidFetchService {
                 log.error("Error fetching reviews for hotel ID: {}", hotelId, e);
             }
 
+            propertyRepository.save(p);
             log.info("Successfully completed fetch and save for hotel ID: {}", hotelId);
 
         } catch (Exception e) {
@@ -163,21 +157,6 @@ public class CupidFetchService {
             }
         }
 
-        if (p.getAmenities() != null) {
-            p.getAmenities().clear();
-        } else {
-            p.setAmenities(new ArrayList<>());
-        }
-        if (data.has("amenities") && data.get("amenities").isArray()) {
-            for (JsonNode amenityNode : data.get("amenities")) {
-                PropertyAmenity amenity = new PropertyAmenity();
-                amenity.setProperty(p);
-                amenity.setAmenityId(amenityNode.has("id") ? amenityNode.get("id").asInt() : null);
-                amenity.setAmenityName(amenityNode.has("name") ? amenityNode.get("name").asText() : null);
-                p.getAmenities().add(amenity);
-            }
-        }
-
         if (p.getFacilities() != null) {
             p.getFacilities().clear();
         } else {
@@ -193,6 +172,82 @@ public class CupidFetchService {
             }
         }
 
+        if (p.getRooms() != null) {
+            p.getRooms().clear();
+        } else {
+            p.setRooms(new ArrayList<>());
+        }
+        if (data.has("rooms") && data.get("rooms").isArray()) {
+            for (JsonNode roomNode : data.get("rooms")) {
+                Room room = new Room();
+                room.setProperty(p);
+                room.setId(roomNode.has("id") ? roomNode.get("id").asLong() : null);
+                room.setRoomName(roomNode.has("room_name") ? roomNode.get("room_name").asText() : null);
+                room.setDescription(roomNode.has("description") ? roomNode.get("description").asText() : null);
+                room.setRoomSizeSquare(roomNode.has("room_size_square") ? roomNode.get("room_size_square").decimalValue() : null);
+                room.setRoomSizeUnit(roomNode.has("room_size_unit") ? roomNode.get("room_size_unit").asText() : null);
+                room.setMaxAdults(roomNode.has("max_adults") ? roomNode.get("max_adults").asInt() : null);
+                room.setMaxChildren(roomNode.has("max_children") ? roomNode.get("max_children").asInt() : null);
+                room.setMaxOccupancy(roomNode.has("max_occupancy") ? roomNode.get("max_occupancy").asInt() : null);
+                try {
+                    room.setRawJson(objectMapper.writeValueAsString(roomNode));
+                } catch (Exception ignored) {}
+
+                if (room.getAmenities() != null) {
+                    room.getAmenities().clear();
+                } else {
+                    room.setAmenities(new ArrayList<>());
+                }
+                if (roomNode.has("room_amenities") && roomNode.get("room_amenities").isArray()) {
+                    for (JsonNode amenityNode : roomNode.get("room_amenities")) {
+                        RoomAmenity amenity = new RoomAmenity();
+                        amenity.setRoom(room);
+                        amenity.setAmenitiesId(amenityNode.has("amenities_id") ? amenityNode.get("amenities_id").asInt() : null);
+                        amenity.setName(amenityNode.has("name") ? amenityNode.get("name").asText() : null);
+                        amenity.setSort(amenityNode.has("sort") ? amenityNode.get("sort").asInt() : null);
+                        room.getAmenities().add(amenity);
+                    }
+                }
+
+                if (room.getPhotos() != null) {
+                    room.getPhotos().clear();
+                } else {
+                    room.setPhotos(new ArrayList<>());
+                }
+                if (roomNode.has("photos") && roomNode.get("photos").isArray()) {
+                    for (JsonNode photoNode : roomNode.get("photos")) {
+                        RoomPhoto photo = new RoomPhoto();
+                        photo.setRoom(room);
+                        photo.setUrl(photoNode.has("url") ? photoNode.get("url").asText() : null);
+                        photo.setHdUrl(photoNode.has("hd_url") ? photoNode.get("hd_url").asText() : null);
+                        photo.setImageDescription(photoNode.has("image_description") ? photoNode.get("image_description").asText() : null);
+                        photo.setImageClass1(photoNode.has("image_class1") ? photoNode.get("image_class1").asText() : null);
+                        photo.setMainPhoto(photoNode.has("main_photo") ? photoNode.get("main_photo").asBoolean() : null);
+                        photo.setScore(photoNode.has("score") ? photoNode.get("score").decimalValue()  : null);
+                        photo.setClassId(photoNode.has("class_id") ? photoNode.get("class_id").asInt() : null);
+                        photo.setClassOrder(photoNode.has("class_order") ? photoNode.get("class_order").asInt() : null);
+                        room.getPhotos().add(photo);
+                    }
+                }
+                p.getRooms().add(room);
+            }
+        }
+
+        if (p.getPolicies() != null) {
+            p.getPolicies().clear();
+        } else {
+            p.setPolicies(new ArrayList<>());
+        }
+        if (data.has("policies") && data.get("policies").isArray()) {
+            for (JsonNode policyNode : data.get("policies")) {
+                Policy policy = new Policy();
+                policy.setProperty(p);
+                policy.setPolicyType(policyNode.has("policy_type") ? policyNode.get("policy_type").asText() : null);
+                policy.setName(policyNode.has("name") ? policyNode.get("name").asText() : null);
+                policy.setDescription(policyNode.has("description") ? policyNode.get("description").asText() : null);
+                p.getPolicies().add(policy);
+            }
+        }
 
         p.setHotelId(data.has("hotel_id") ? data.get("hotel_id").asLong() : null);
         p.setCupidId(data.has("cupid_id") ? data.get("cupid_id").asLong() : null);

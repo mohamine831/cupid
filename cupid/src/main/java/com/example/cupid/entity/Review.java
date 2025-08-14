@@ -15,8 +15,9 @@ public class Review {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "hotel_id")
-    private Long hotelId;
+    @ManyToOne
+    @JoinColumn(name = "hotel_id")
+    private Property property;
 
     @Column(name = "average_score")
     private BigDecimal averageScore;
