@@ -16,7 +16,7 @@ public class PropertyTranslation {
     @JoinColumn(name = "hotel_id")
     private Property property;
 
-    @Column(name = "lang")
+    @Column(name = "lang", length = 10)
     private String lang;
 
     @Column(columnDefinition = "text")

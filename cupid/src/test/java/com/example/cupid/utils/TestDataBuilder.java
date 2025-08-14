@@ -82,7 +82,9 @@ public class TestDataBuilder {
         room.setMaxAdults(2);
         room.setMaxChildren(1);
         room.setMaxOccupancy(3);
-        room.setRawJson("{\"room_id\": " + roomId + "}");
+        room.setBedRelation("NONE");
+        room.setBedTypesJson("[{\"bed_type\": \"Double bed\", \"quantity\": 1}]");
+        room.setViewsJson("[]");
         room.setPhotos(new ArrayList<>());
         room.setAmenities(new ArrayList<>());
         return room;
@@ -129,7 +131,6 @@ public class TestDataBuilder {
         review.setPros("Clean rooms, friendly staff");
         review.setCons("Noisy at night");
         review.setSource("booking.com");
-        review.setRawJson("{\"review_id\": 1}");
         return review;
     }
 

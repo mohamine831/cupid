@@ -31,10 +31,17 @@ public class V1Mapper {
                 property.getReviewCount(),
                 property.getPhone(),
                 property.getEmail(),
+                property.getFax(),
+                property.getPetsAllowed(),
+                property.getChildAllowed(),
+                property.getAirportCode(),
+                property.getGroupRoomMin(),
+                property.getMainImageTh(),
+                property.getCheckinJson(),
+                property.getParking(),
                 property.getDescriptionHtml(),
                 property.getMarkdownDescription(),
                 property.getImportantInfo(),
-                property.getRawJson(),
                 property.getCreatedAt(),
                 property.getUpdatedAt(),
                 property.getPhotos() != null ? property.getPhotos().stream().map(this::toDto).collect(Collectors.toList()) : Collections.emptyList(),
@@ -83,7 +90,9 @@ public class V1Mapper {
                 room.getMaxAdults(),
                 room.getMaxChildren(),
                 room.getMaxOccupancy(),
-                room.getRawJson(),
+                room.getBedRelation(),
+                room.getBedTypesJson(),
+                room.getViewsJson(),
                 room.getPhotos() != null ? room.getPhotos().stream().map(this::toDto).collect(Collectors.toList()) : Collections.emptyList(),
                 room.getAmenities() != null ? room.getAmenities().stream().map(this::toDto).collect(Collectors.toList()) : Collections.emptyList()
         );
@@ -140,8 +149,7 @@ public class V1Mapper {
                 review.getLanguage(),
                 review.getPros(),
                 review.getCons(),
-                review.getSource(),
-                review.getRawJson()
+                review.getSource()
         );
     }
 

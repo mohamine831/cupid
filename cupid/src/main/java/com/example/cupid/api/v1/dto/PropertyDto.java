@@ -43,6 +43,27 @@ public class PropertyDto implements Serializable {
 
     String phone;
     String email;
+    String fax;
+
+    @JsonProperty("pets_allowed")
+    Boolean petsAllowed;
+
+    @JsonProperty("child_allowed")
+    Boolean childAllowed;
+
+    @JsonProperty("airport_code")
+    String airportCode;
+
+    @JsonProperty("group_room_min")
+    Integer groupRoomMin;
+
+    @JsonProperty("main_image_th")
+    String mainImageTh;
+
+    @JsonProperty("checkin_json")
+    String checkinJson;
+
+    String parking;
 
     @JsonProperty("description_html")
     String descriptionHtml;
@@ -52,9 +73,6 @@ public class PropertyDto implements Serializable {
 
     @JsonProperty("important_info")
     String importantInfo;
-
-    @JsonProperty("raw_json")
-    String rawJson;
 
     @JsonProperty("created_at")
     Instant createdAt;

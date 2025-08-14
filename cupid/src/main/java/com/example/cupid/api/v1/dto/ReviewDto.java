@@ -22,6 +22,4 @@ public class ReviewDto implements Serializable {
     String pros;
     String cons;
     String source;
-    @JsonProperty("raw_json")
-    String rawJson;
 }

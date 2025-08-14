@@ -40,9 +40,16 @@ public class Room {
     @Column(name = "max_occupancy")
     private Integer maxOccupancy;
 
+    @Column(name = "bed_relation")
+    private String bedRelation;
+
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "raw_json", columnDefinition = "jsonb")
-    private String rawJson;
+    @Column(name = "bed_types_json", columnDefinition = "jsonb")
+    private String bedTypesJson;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "views_json", columnDefinition = "jsonb")
+    private String viewsJson;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoomPhoto> photos;

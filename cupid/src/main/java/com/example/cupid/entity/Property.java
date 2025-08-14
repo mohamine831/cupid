@@ -47,6 +47,9 @@ public class Property {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "fax")
+    private String fax;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "address_json", columnDefinition = "jsonb")
     private String addressJson;
@@ -60,6 +63,28 @@ public class Property {
     @Column(name = "review_count")
     private Integer reviewCount;
 
+    @Column(name = "pets_allowed")
+    private Boolean petsAllowed;
+
+    @Column(name = "child_allowed")
+    private Boolean childAllowed;
+
+    @Column(name = "airport_code")
+    private String airportCode;
+
+    @Column(name = "group_room_min")
+    private Integer groupRoomMin;
+
+    @Column(name = "main_image_th")
+    private String mainImageTh;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "checkin_json", columnDefinition = "jsonb")
+    private String checkinJson;
+
+    @Column(name = "parking")
+    private String parking;
+
     @Column(columnDefinition = "text")
     private String descriptionHtml;
 
@@ -68,10 +93,6 @@ public class Property {
 
     @Column(columnDefinition = "text")
     private String importantInfo;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private String rawJson;
 
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();

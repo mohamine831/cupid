@@ -22,7 +22,7 @@ public class Review {
     @Column(name = "average_score")
     private BigDecimal averageScore;
 
-    @Column(name = "country")
+    @Column(name = "country", length = 50)
     private String country;
 
     @Column(name = "type")
@@ -37,7 +37,7 @@ public class Review {
     @Column(name = "headline")
     private String headline;
 
-    @Column(name = "language")
+    @Column(name = "language", length = 10)
     private String language;
 
     @Column(columnDefinition = "text")
@@ -48,8 +48,4 @@ public class Review {
 
     @Column(name = "source")
     private String source;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private String rawJson;
 }

@@ -1,4 +1,5 @@
 -- Flyway migration: create core tables
+
 CREATE TABLE property (
   hotel_id BIGINT PRIMARY KEY,
   cupid_id BIGINT,
@@ -11,6 +12,14 @@ CREATE TABLE property (
   longitude DOUBLE PRECISION,
   phone TEXT,
   email TEXT,
+  fax TEXT,
+  pets_allowed BOOLEAN,
+  child_allowed BOOLEAN,
+  airport_code TEXT,
+  group_room_min INTEGER,
+  main_image_th TEXT,
+  checkin_json JSONB,
+  parking TEXT,
   address_json JSONB,
   stars INTEGER,
   rating NUMERIC,
@@ -18,7 +27,6 @@ CREATE TABLE property (
   description_html TEXT,
   markdown_description TEXT,
   important_info TEXT,
-  raw_json JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
@@ -26,7 +34,7 @@ CREATE TABLE property (
 CREATE TABLE property_translation (
   id BIGSERIAL PRIMARY KEY,
   hotel_id BIGINT REFERENCES property(hotel_id) ON DELETE CASCADE,
-  lang VARCHAR(4) NOT NULL,
+  lang VARCHAR(10) NOT NULL,
   description_html TEXT,
   markdown_description TEXT,
   fetched_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
@@ -56,7 +64,9 @@ CREATE TABLE room (
   max_adults INTEGER,
   max_children INTEGER,
   max_occupancy INTEGER,
-  raw_json JSONB
+  bed_relation TEXT,
+  bed_types_json JSONB,
+  views_json JSONB
 );
 
 CREATE TABLE room_photo (
@@ -65,6 +75,9 @@ CREATE TABLE room_photo (
   url TEXT,
   hd_url TEXT,
   image_description TEXT,
+  class_order INTEGER,
+  image_class1 VARCHAR(255),
+  class_id INTEGER,
   main_photo BOOLEAN,
   score NUMERIC
 );
@@ -73,23 +86,40 @@ CREATE TABLE review (
   id BIGSERIAL PRIMARY KEY,
   hotel_id BIGINT REFERENCES property(hotel_id) ON DELETE CASCADE,
   average_score NUMERIC,
-  country VARCHAR(10),
+  country VARCHAR(50),
   type TEXT,
   name TEXT,
   review_date TIMESTAMP,
   headline TEXT,
-  language VARCHAR(8),
+  language VARCHAR(10),
   pros TEXT,
   cons TEXT,
-  source TEXT,
-  raw_json JSONB
+  source TEXT
 );
 
-CREATE TABLE fetch_audit (
+CREATE TABLE property_facility (
   id BIGSERIAL PRIMARY KEY,
-  hotel_id BIGINT,
-  last_property_fetch TIMESTAMP WITH TIME ZONE,
-  last_translation_fetch TIMESTAMP WITH TIME ZONE,
-  last_review_fetch TIMESTAMP WITH TIME ZONE,
-  status TEXT
+  hotel_id BIGINT REFERENCES property(hotel_id) ON DELETE CASCADE,
+  facility_id INTEGER,
+  facility_name TEXT
 );
+
+CREATE TABLE policy (
+    id BIGSERIAL PRIMARY KEY,
+    hotel_id BIGINT REFERENCES property(hotel_id) ON DELETE CASCADE,
+    policy_type VARCHAR(255),
+    name VARCHAR(255),
+    description TEXT
+);
+
+CREATE TABLE room_amenity (
+    id BIGSERIAL PRIMARY KEY,
+    room_id BIGINT REFERENCES room(id) ON DELETE CASCADE,
+    amenities_id INTEGER,
+    name VARCHAR(255),
+    sort INTEGER
+);
+
+CREATE INDEX IF NOT EXISTS idx_property_hotel_id ON property(hotel_id);
+CREATE INDEX IF NOT EXISTS idx_property_cupid_id ON property(cupid_id);
+CREATE INDEX IF NOT EXISTS idx_property_name ON property(name);

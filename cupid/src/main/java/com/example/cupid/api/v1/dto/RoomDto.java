@@ -23,8 +23,12 @@ public class RoomDto implements Serializable {
     Integer maxChildren;
     @JsonProperty("max_occupancy")
     Integer maxOccupancy;
-    @JsonProperty("raw_json")
-    String rawJson;
+    @JsonProperty("bed_relation")
+    String bedRelation;
+    @JsonProperty("bed_types_json")
+    String bedTypesJson;
+    @JsonProperty("views_json")
+    String viewsJson;
     List<RoomPhotoDto> photos;
     List<RoomAmenityDto> amenities;
 }

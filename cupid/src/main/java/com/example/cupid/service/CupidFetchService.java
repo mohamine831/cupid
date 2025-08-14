@@ -18,6 +18,9 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
@@ -67,11 +70,24 @@ public class CupidFetchService {
                 try {
                     JsonNode tnode = apiClient.fetchTranslation(hotelId, lang).block();
                     if (tnode != null && !tnode.isNull()) {
-                        PropertyTranslation tr = new PropertyTranslation();
-                        tr.setProperty(p);
-                        tr.setLang(lang);
-                        tr.setDescriptionHtml(tnode.has("description") ? tnode.get("description").asText() : null);
-                        tr.setMarkdownDescription(tnode.has("markdown_description") ? tnode.get("markdown_description").asText() : null);
+                        // Check if translation already exists for this hotel and language
+                        Optional<PropertyTranslation> existingTranslation = translationRepository.findByPropertyHotelIdAndLang(hotelId, lang);
+                        
+                        PropertyTranslation tr;
+                        if (existingTranslation.isPresent()) {
+                            // Update existing translation
+                            tr = existingTranslation.get();
+                            tr.setDescriptionHtml(tnode.has("description") ? tnode.get("description").asText() : null);
+                            tr.setMarkdownDescription(tnode.has("markdown_description") ? tnode.get("markdown_description").asText() : null);
+                            tr.setFetchedAt(Instant.now());
+                        } else {
+                            // Create new translation
+                            tr = new PropertyTranslation();
+                            tr.setProperty(p);
+                            tr.setLang(lang);
+                            tr.setDescriptionHtml(tnode.has("description") ? tnode.get("description").asText() : null);
+                            tr.setMarkdownDescription(tnode.has("markdown_description") ? tnode.get("markdown_description").asText() : null);
+                        }
                         p.getTranslations().add(tr);
                     } else {
                         log.debug("No translation data found for hotel ID: {} and language: {}", hotelId, lang);
@@ -111,9 +127,6 @@ public class CupidFetchService {
                         review.setPros(rn.has("pros") ? rn.get("pros").asText() : null);
                         review.setCons(rn.has("cons") ? rn.get("cons").asText() : null);
                         review.setSource(rn.has("source") ? rn.get("source").asText() : null);
-                        try {
-                            review.setRawJson(objectMapper.writeValueAsString(rn));
-                        } catch (Exception ignored) {}
                         p.getReviews().add(review);
                     }
                     log.info("Saved {} reviews for hotel ID: {}", p.getReviews().size(), hotelId);
@@ -124,8 +137,16 @@ public class CupidFetchService {
                 log.error("Error fetching reviews for hotel ID: {}", hotelId, e);
             }
 
-            propertyRepository.save(p);
-            log.info("Successfully completed fetch and save for hotel ID: {}", hotelId);
+            try {
+                propertyRepository.save(p);
+                log.info("Successfully completed fetch and save for hotel ID: {}", hotelId);
+            } catch (Exception e) {
+                log.error("Error saving property for hotel ID: {}. Error: {}", hotelId, e.getMessage());
+                log.error("Property data: hotelId={}, name={}, importantInfo length={}", 
+                    p.getHotelId(), p.getName(), 
+                    p.getImportantInfo() != null ? p.getImportantInfo().length() : 0);
+                throw e;
+            }
 
         } catch (Exception e) {
             log.error("Error in fetchAndSave for hotel ID: {}", hotelId, e);
@@ -189,9 +210,41 @@ public class CupidFetchService {
                 room.setMaxAdults(roomNode.has("max_adults") ? roomNode.get("max_adults").asInt() : null);
                 room.setMaxChildren(roomNode.has("max_children") ? roomNode.get("max_children").asInt() : null);
                 room.setMaxOccupancy(roomNode.has("max_occupancy") ? roomNode.get("max_occupancy").asInt() : null);
-                try {
-                    room.setRawJson(objectMapper.writeValueAsString(roomNode));
-                } catch (Exception ignored) {}
+                room.setBedRelation(roomNode.has("bed_relation") ? roomNode.get("bed_relation").asText() : null);
+                
+                // Extract bed_types JSON with proper validation
+                if (roomNode.has("bed_types") && !roomNode.get("bed_types").isNull()) {
+                    try {
+                        String bedTypesJson = objectMapper.writeValueAsString(roomNode.get("bed_types"));
+                        if (bedTypesJson != null && !bedTypesJson.trim().isEmpty()) {
+                            room.setBedTypesJson(bedTypesJson);
+                        } else {
+                            room.setBedTypesJson(null);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Error processing bed_types JSON for room ID: {}. Setting to null.", roomNode.has("id") ? roomNode.get("id").asLong() : "unknown");
+                        room.setBedTypesJson(null);
+                    }
+                } else {
+                    room.setBedTypesJson(null);
+                }
+                
+                // Extract views JSON with proper validation
+                if (roomNode.has("views") && !roomNode.get("views").isNull()) {
+                    try {
+                        String viewsJson = objectMapper.writeValueAsString(roomNode.get("views"));
+                        if (viewsJson != null && !viewsJson.trim().isEmpty()) {
+                            room.setViewsJson(viewsJson);
+                        } else {
+                            room.setViewsJson(null);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Error processing views JSON for room ID: {}. Setting to null.", roomNode.has("id") ? roomNode.get("id").asLong() : "unknown");
+                        room.setViewsJson(null);
+                    }
+                } else {
+                    room.setViewsJson(null);
+                }
 
                 if (room.getAmenities() != null) {
                     room.getAmenities().clear();
@@ -249,26 +302,111 @@ public class CupidFetchService {
             }
         }
 
-        p.setHotelId(data.has("hotel_id") ? data.get("hotel_id").asLong() : null);
-        p.setCupidId(data.has("cupid_id") ? data.get("cupid_id").asLong() : null);
-        p.setName(data.has("hotel_name") ? data.get("hotel_name").asText() : null);
-        p.setHotelType(data.has("hotel_type") ? data.get("hotel_type").asText() : null);
-        p.setHotelTypeId(data.has("hotel_type_id") ? data.get("hotel_type_id").asInt() : null);
-        p.setChain(data.has("chain") ? data.get("chain").asText() : null);
-        p.setChainId(data.has("chain_id") ? data.get("chain_id").asInt() : null);
-        p.setLatitude(data.has("latitude") ? data.get("latitude").asDouble() : null);
-        p.setLongitude(data.has("longitude") ? data.get("longitude").asDouble() : null);
-        p.setPhone(data.has("phone") ? data.get("phone").asText() : null);
-        p.setEmail(data.has("email") ? data.get("email").asText() : null);
-        p.setStars(data.has("stars") ? data.get("stars").asInt() : null);
-        p.setRating(data.has("rating") ? data.get("rating").decimalValue() : null);
-        p.setReviewCount(data.has("review_count") ? data.get("review_count").asInt() : null);
-        p.setDescriptionHtml(data.has("description") ? data.get("description").asText() : null);
-        p.setMarkdownDescription(data.has("markdown_description") ? data.get("markdown_description").asText() : null);
-        p.setImportantInfo(data.has("important_info") ? data.get("important_info").asText() : null);
-        try {
-            p.setRawJson(objectMapper.writeValueAsString(data));
-        } catch (Exception ignored) {}
+        p.setHotelId(data.has("hotel_id") && !data.get("hotel_id").isNull() ? data.get("hotel_id").asLong() : null);
+        p.setCupidId(data.has("cupid_id") && !data.get("cupid_id").isNull() ? data.get("cupid_id").asLong() : null);
+        p.setName(data.has("hotel_name") && !data.get("hotel_name").isNull() && !data.get("hotel_name").asText().trim().isEmpty() ? data.get("hotel_name").asText() : null);
+        p.setHotelType(data.has("hotel_type") && !data.get("hotel_type").isNull() && !data.get("hotel_type").asText().trim().isEmpty() ? data.get("hotel_type").asText() : null);
+        p.setHotelTypeId(data.has("hotel_type_id") && !data.get("hotel_type_id").isNull() ? data.get("hotel_type_id").asInt() : null);
+        p.setChain(data.has("chain") && !data.get("chain").isNull() && !data.get("chain").asText().trim().isEmpty() ? data.get("chain").asText() : null);
+        p.setChainId(data.has("chain_id") && !data.get("chain_id").isNull() ? data.get("chain_id").asInt() : null);
+        p.setLatitude(data.has("latitude") && !data.get("latitude").isNull() ? data.get("latitude").asDouble() : null);
+        p.setLongitude(data.has("longitude") && !data.get("longitude").isNull() ? data.get("longitude").asDouble() : null);
+        // Handle address_json with proper null checking and JSON validation
+        ObjectMapper mapper = new ObjectMapper();
+
+        if (data.has("address") && !data.get("address").isNull()) {
+            try {
+                JsonNode addressNode = data.get("address");
+                if (addressNode.isObject()) {
+                    // Convert the nested address object to a JSON string
+                    String addressJson = mapper.writeValueAsString(addressNode);
+                    p.setAddressJson(addressJson);
+                } else {
+                    p.setAddressJson(null);
+                }
+            } catch (Exception e) {
+                log.warn("Error processing address JSON for hotel ID: {}. Setting to null.",
+                        data.has("hotel_id") ? data.get("hotel_id").asLong() : null, e);
+                p.setAddressJson(null);
+            }
+        } else {
+            p.setAddressJson(null);
+        }
+        // Handle text fields with proper null and empty string checking
+        p.setPhone(data.has("phone") && !data.get("phone").isNull() && !data.get("phone").asText().trim().isEmpty() ? data.get("phone").asText() : null);
+        p.setEmail(data.has("email") && !data.get("email").isNull() && !data.get("email").asText().trim().isEmpty() ? data.get("email").asText() : null);
+        p.setFax(data.has("fax") && !data.get("fax").isNull() && !data.get("fax").asText().trim().isEmpty() ? data.get("fax").asText() : null);
+        p.setStars(data.has("stars") && !data.get("stars").isNull() ? data.get("stars").asInt() : null);
+        p.setRating(data.has("rating") && !data.get("rating").isNull() ? data.get("rating").decimalValue() : null);
+        p.setReviewCount(data.has("review_count") && !data.get("review_count").isNull() ? data.get("review_count").asInt() : null);
+        p.setPetsAllowed(data.has("pets_allowed") && !data.get("pets_allowed").isNull() ? data.get("pets_allowed").asBoolean() : null);
+        p.setChildAllowed(data.has("child_allowed") && !data.get("child_allowed").isNull() ? data.get("child_allowed").asBoolean() : null);
+        p.setAirportCode(data.has("airport_code") && !data.get("airport_code").isNull() && !data.get("airport_code").asText().trim().isEmpty() ? data.get("airport_code").asText() : null);
+        p.setGroupRoomMin(data.has("group_room_min") && !data.get("group_room_min").isNull() ? data.get("group_room_min").asInt() : null);
+        p.setMainImageTh(data.has("main_image_th") && !data.get("main_image_th").isNull() && !data.get("main_image_th").asText().trim().isEmpty() ? data.get("main_image_th").asText() : null);
+        p.setParking(data.has("parking") && !data.get("parking").isNull() && !data.get("parking").asText().trim().isEmpty() ? data.get("parking").asText() : null);
+        // Handle description_html with proper null checking and length validation
+        if (data.has("description") && !data.get("description").isNull()) {
+            String descriptionHtml = data.get("description").asText();
+            if (descriptionHtml != null && !descriptionHtml.trim().isEmpty()) {
+                if (descriptionHtml.length() > 10000) {
+                    descriptionHtml = descriptionHtml.substring(0, 10000) + "...";
+                }
+                p.setDescriptionHtml(descriptionHtml);
+            } else {
+                p.setDescriptionHtml(null);
+            }
+        } else {
+            p.setDescriptionHtml(null);
+        }
+        
+        // Handle markdown_description with proper null checking and length validation
+        if (data.has("markdown_description") && !data.get("markdown_description").isNull()) {
+            String markdownDescription = data.get("markdown_description").asText();
+            if (markdownDescription != null && !markdownDescription.trim().isEmpty()) {
+                if (markdownDescription.length() > 10000) {
+                    markdownDescription = markdownDescription.substring(0, 10000) + "...";
+                }
+                p.setMarkdownDescription(markdownDescription);
+            } else {
+                p.setMarkdownDescription(null);
+            }
+        } else {
+            p.setMarkdownDescription(null);
+        }
+        // Handle important_info with proper null checking and length validation
+        if (data.has("important_info") && !data.get("important_info").isNull()) {
+            String importantInfo = data.get("important_info").asText();
+            if (importantInfo != null && !importantInfo.trim().isEmpty()) {
+                // Limit the length to prevent database issues (PostgreSQL TEXT can handle up to 1GB, but let's be safe)
+                if (importantInfo.length() > 10000) {
+                    importantInfo = importantInfo.substring(0, 10000) + "...";
+                }
+                p.setImportantInfo(importantInfo);
+            } else {
+                p.setImportantInfo(null);
+            }
+        } else {
+            p.setImportantInfo(null);
+        }
+        
+        // Extract checkin JSON with proper validation
+        if (data.has("checkin") && !data.get("checkin").isNull()) {
+            try {
+                String checkinJson = objectMapper.writeValueAsString(data.get("checkin"));
+                if (checkinJson != null && !checkinJson.trim().isEmpty()) {
+                    p.setCheckinJson(checkinJson);
+                } else {
+                    p.setCheckinJson(null);
+                }
+            } catch (Exception e) {
+                log.warn("Error processing checkin JSON for hotel ID: {}. Setting to null.", data.get("hotel_id").asLong());
+                p.setCheckinJson(null);
+            }
+        } else {
+            p.setCheckinJson(null);
+        }
+        
         p.setUpdatedAt(Instant.now());
         return p;
     }
