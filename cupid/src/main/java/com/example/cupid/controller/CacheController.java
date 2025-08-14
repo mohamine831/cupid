@@ -72,3 +72,4 @@ public class CacheController {
         return ResponseEntity.ok(stats);
     }
 }
+

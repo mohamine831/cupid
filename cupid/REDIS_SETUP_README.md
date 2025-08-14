@@ -226,3 +226,4 @@ redis-cli flushall
 - **Testing**: Use in-memory cache for CI/CD pipelines
 - **Production**: Use Redis for scalability and persistence
 - **Docker**: Use Docker Redis for consistent environments
+
