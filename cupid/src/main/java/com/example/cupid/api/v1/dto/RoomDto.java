@@ -10,12 +10,21 @@ import java.util.List;
 @Value
 public class RoomDto implements Serializable {
     Long id;
-    String name;
-    @JsonProperty("pax")
-    Integer pax;
-    BigDecimal size;
-    @JsonProperty("size_unit")
-    String sizeUnit;
+    @JsonProperty("room_name")
+    String roomName;
+    String description;
+    @JsonProperty("room_size_square")
+    BigDecimal roomSizeSquare;
+    @JsonProperty("room_size_unit")
+    String roomSizeUnit;
+    @JsonProperty("max_adults")
+    Integer maxAdults;
+    @JsonProperty("max_children")
+    Integer maxChildren;
+    @JsonProperty("max_occupancy")
+    Integer maxOccupancy;
+    @JsonProperty("raw_json")
+    String rawJson;
     List<RoomPhotoDto> photos;
     List<RoomAmenityDto> amenities;
 }

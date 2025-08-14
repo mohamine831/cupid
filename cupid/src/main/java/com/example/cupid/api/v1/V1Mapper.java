@@ -17,8 +17,15 @@ public class V1Mapper {
         }
         return new PropertyDto(
                 property.getHotelId(),
+                property.getCupidId(),
                 property.getName(),
                 property.getHotelType(),
+                property.getHotelTypeId(),
+                property.getChain(),
+                property.getChainId(),
+                property.getLatitude(),
+                property.getLongitude(),
+                property.getAddressJson(),
                 property.getStars(),
                 property.getRating(),
                 property.getReviewCount(),
@@ -27,6 +34,9 @@ public class V1Mapper {
                 property.getDescriptionHtml(),
                 property.getMarkdownDescription(),
                 property.getImportantInfo(),
+                property.getRawJson(),
+                property.getCreatedAt(),
+                property.getUpdatedAt(),
                 property.getPhotos() != null ? property.getPhotos().stream().map(this::toDto).collect(Collectors.toList()) : Collections.emptyList(),
                 property.getFacilities() != null ? property.getFacilities().stream().map(this::toDto).collect(Collectors.toList()) : Collections.emptyList(),
                 property.getRooms() != null ? property.getRooms().stream().map(this::toDto).collect(Collectors.toList()) : Collections.emptyList(),
@@ -40,14 +50,24 @@ public class V1Mapper {
         if (photo == null) {
             return null;
         }
-        return new PropertyPhotoDto(photo.getId(), photo.getUrl());
+        return new PropertyPhotoDto(
+                photo.getId(),
+                photo.getUrl(),
+                photo.getHdUrl(),
+                photo.getImageDescription(),
+                photo.getImageClass1(),
+                photo.getMainPhoto(),
+                photo.getScore(),
+                photo.getClassId(),
+                photo.getClassOrder()
+        );
     }
 
     public PropertyFacilityDto toDto(PropertyFacility facility) {
         if (facility == null) {
             return null;
         }
-        return new PropertyFacilityDto(facility.getId(), facility.getFacilityName());
+        return new PropertyFacilityDto(facility.getId(), facility.getFacilityId(), facility.getFacilityName());
     }
 
     public RoomDto toDto(Room room) {
@@ -57,9 +77,13 @@ public class V1Mapper {
         return new RoomDto(
                 room.getId(),
                 room.getRoomName(),
-                room.getMaxOccupancy(),
+                room.getDescription(),
                 room.getRoomSizeSquare(),
                 room.getRoomSizeUnit(),
+                room.getMaxAdults(),
+                room.getMaxChildren(),
+                room.getMaxOccupancy(),
+                room.getRawJson(),
                 room.getPhotos() != null ? room.getPhotos().stream().map(this::toDto).collect(Collectors.toList()) : Collections.emptyList(),
                 room.getAmenities() != null ? room.getAmenities().stream().map(this::toDto).collect(Collectors.toList()) : Collections.emptyList()
         );
@@ -69,21 +93,36 @@ public class V1Mapper {
         if (photo == null) {
             return null;
         }
-        return new RoomPhotoDto(photo.getId(), photo.getUrl());
+        return new RoomPhotoDto(
+                photo.getId(),
+                photo.getUrl(),
+                photo.getHdUrl(),
+                photo.getImageDescription(),
+                photo.getImageClass1(),
+                photo.getMainPhoto(),
+                photo.getScore(),
+                photo.getClassId(),
+                photo.getClassOrder()
+        );
     }
 
     public RoomAmenityDto toDto(RoomAmenity amenity) {
         if (amenity == null) {
             return null;
         }
-        return new RoomAmenityDto(amenity.getId(), amenity.getName());
+        return new RoomAmenityDto(
+                amenity.getId(),
+                amenity.getName(),
+                amenity.getAmenitiesId(),
+                amenity.getSort()
+        );
     }
 
     public PolicyDto toDto(Policy policy) {
         if (policy == null) {
             return null;
         }
-        return new PolicyDto(policy.getId(), policy.getName(), policy.getDescription());
+        return new PolicyDto(policy.getId(), policy.getName(), policy.getDescription(), policy.getPolicyType());
     }
 
     public ReviewDto toDto(Review review) {
@@ -93,9 +132,16 @@ public class V1Mapper {
         return new ReviewDto(
                 review.getId(),
                 review.getAverageScore(),
-                review.getHeadline(),
+                review.getCountry(),
+                review.getType(),
                 review.getName(),
-                review.getCountry()
+                review.getReviewDate(),
+                review.getHeadline(),
+                review.getLanguage(),
+                review.getPros(),
+                review.getCons(),
+                review.getSource(),
+                review.getRawJson()
         );
     }
 
@@ -107,7 +153,8 @@ public class V1Mapper {
                 translation.getId(),
                 translation.getLang(),
                 translation.getDescriptionHtml(),
-                translation.getMarkdownDescription()
+                translation.getMarkdownDescription(),
+                translation.getFetchedAt()
         );
     }
 }

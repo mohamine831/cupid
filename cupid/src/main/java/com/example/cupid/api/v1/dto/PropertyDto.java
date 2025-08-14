@@ -5,6 +5,7 @@ import lombok.Value;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 @Value
@@ -12,10 +13,27 @@ public class PropertyDto implements Serializable {
     @JsonProperty("hotel_id")
     Long hotelId;
 
+    @JsonProperty("cupid_id")
+    Long cupidId;
+
     String name;
 
     @JsonProperty("hotel_type")
     String hotelType;
+
+    @JsonProperty("hotel_type_id")
+    Integer hotelTypeId;
+
+    String chain;
+
+    @JsonProperty("chain_id")
+    Integer chainId;
+
+    Double latitude;
+    Double longitude;
+
+    @JsonProperty("address_json")
+    String addressJson;
 
     Integer stars;
     BigDecimal rating;
@@ -34,6 +52,15 @@ public class PropertyDto implements Serializable {
 
     @JsonProperty("important_info")
     String importantInfo;
+
+    @JsonProperty("raw_json")
+    String rawJson;
+
+    @JsonProperty("created_at")
+    Instant createdAt;
+
+    @JsonProperty("updated_at")
+    Instant updatedAt;
 
     List<PropertyPhotoDto> photos;
     List<PropertyFacilityDto> facilities;

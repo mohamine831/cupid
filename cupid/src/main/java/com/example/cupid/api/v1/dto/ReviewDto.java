@@ -10,10 +10,18 @@ import java.time.Instant;
 @Value
 public class ReviewDto implements Serializable {
     Long id;
-    BigDecimal rating;
-    String title;
-    @JsonProperty("author_name")
-    String authorName;
-    @JsonProperty("author_country")
-    String authorCountry;
+    @JsonProperty("average_score")
+    BigDecimal averageScore;
+    String country;
+    String type;
+    String name;
+    @JsonProperty("review_date")
+    Instant reviewDate;
+    String headline;
+    String language;
+    String pros;
+    String cons;
+    String source;
+    @JsonProperty("raw_json")
+    String rawJson;
 }
