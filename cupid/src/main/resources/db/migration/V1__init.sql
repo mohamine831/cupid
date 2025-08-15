@@ -18,9 +18,9 @@ CREATE TABLE property (
   airport_code TEXT,
   group_room_min INTEGER,
   main_image_th TEXT,
-  checkin_json JSONB,
+  checkin_json JSON,
   parking TEXT,
-  address_json JSONB,
+  address_json JSON,
   stars INTEGER,
   rating NUMERIC,
   review_count INTEGER,
@@ -65,8 +65,8 @@ CREATE TABLE room (
   max_children INTEGER,
   max_occupancy INTEGER,
   bed_relation TEXT,
-  bed_types_json JSONB,
-  views_json JSONB
+  bed_types_json JSON,
+  views_json JSON
 );
 
 CREATE TABLE room_photo (

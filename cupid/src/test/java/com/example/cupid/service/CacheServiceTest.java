@@ -34,12 +34,13 @@ class CacheServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
+        // No global setup needed - each test will set up its own mocks
     }
 
     @Test
     void getFromCache_CacheHit() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         when(cache.get(CACHE_KEY)).thenReturn(valueWrapper);
         when(valueWrapper.get()).thenReturn(CACHE_VALUE);
 
@@ -55,6 +56,7 @@ class CacheServiceTest {
     @Test
     void getFromCache_CacheMiss() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         when(cache.get(CACHE_KEY)).thenReturn(null);
 
         // When
@@ -83,6 +85,7 @@ class CacheServiceTest {
     @Test
     void putInCache_Success() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         // When
         cacheService.putInCache(CACHE_NAME, CACHE_KEY, CACHE_VALUE);
 
@@ -107,6 +110,7 @@ class CacheServiceTest {
     @Test
     void evictFromCache_Success() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         // When
         cacheService.evictFromCache(CACHE_NAME, CACHE_KEY);
 
@@ -131,6 +135,7 @@ class CacheServiceTest {
     @Test
     void clearCache_Success() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         // When
         cacheService.clearCache(CACHE_NAME);
 
@@ -155,6 +160,7 @@ class CacheServiceTest {
     @Test
     void getOrLoad_CacheHit() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         when(cache.get(CACHE_KEY)).thenReturn(valueWrapper);
         when(valueWrapper.get()).thenReturn(CACHE_VALUE);
 
@@ -171,6 +177,7 @@ class CacheServiceTest {
     @Test
     void getOrLoad_CacheMiss_Success() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         when(cache.get(CACHE_KEY)).thenReturn(null);
 
         // When
@@ -178,7 +185,7 @@ class CacheServiceTest {
 
         // Then
         assertThat(result).isEqualTo(CACHE_VALUE);
-        verify(cacheManager).getCache(CACHE_NAME);
+        verify(cacheManager, times(2)).getCache(CACHE_NAME); // Called twice: once in getFromCache, once in putInCache
         verify(cache).get(CACHE_KEY);
         verify(cache).put(CACHE_KEY, CACHE_VALUE);
     }
@@ -186,6 +193,7 @@ class CacheServiceTest {
     @Test
     void getOrLoad_CacheMiss_LoaderReturnsNull() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         when(cache.get(CACHE_KEY)).thenReturn(null);
 
         // When
@@ -201,6 +209,7 @@ class CacheServiceTest {
     @Test
     void getOrLoad_CacheMiss_LoaderThrowsException() {
         // Given
+        when(cacheManager.getCache(CACHE_NAME)).thenReturn(cache);
         when(cache.get(CACHE_KEY)).thenReturn(null);
 
         // When

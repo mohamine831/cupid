@@ -7,7 +7,7 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
@@ -15,10 +15,12 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/migration
   
   cache:
     type: simple
+    cache-names: properties,hotels,reviews,translations
   
   webflux:
     base-url: http://localhost:8080

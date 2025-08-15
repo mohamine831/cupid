@@ -18,20 +18,12 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
     @Cacheable(value = "properties", key = "#hotelId")
     @Query("SELECT p FROM Property p " +
            "LEFT JOIN FETCH p.photos " +
-           "LEFT JOIN FETCH p.facilities " +
-           "LEFT JOIN FETCH p.rooms r " +
-           "LEFT JOIN FETCH r.photos " +
-           "LEFT JOIN FETCH r.amenities " +
-           "LEFT JOIN FETCH p.policies " +
-           "LEFT JOIN FETCH p.reviews " +
-           "LEFT JOIN FETCH p.translations " +
            "WHERE p.hotelId = :hotelId")
     Optional<Property> findByIdWithAllDetails(@Param("hotelId") Long hotelId);
 
     @Cacheable(value = "hotels", key = "'page_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     @Query("SELECT p FROM Property p " +
            "LEFT JOIN FETCH p.photos " +
-           "LEFT JOIN FETCH p.facilities " +
            "ORDER BY p.rating DESC, p.reviewCount DESC")
     Page<Property> findAllWithBasicDetails(Pageable pageable);
 

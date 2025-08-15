@@ -65,9 +65,12 @@ public class CacheController {
     public ResponseEntity<Map<String, Object>> getCacheStats() {
         Map<String, Object> stats = new HashMap<>();
         
+        // Get cache names once and reuse
+        var cacheNames = cacheManager.getCacheNames();
+        
         // Add cache statistics if available
-        stats.put("totalCaches", cacheManager.getCacheNames().size());
-        stats.put("cacheNames", cacheManager.getCacheNames());
+        stats.put("totalCaches", cacheNames.size());
+        stats.put("cacheNames", cacheNames);
         
         return ResponseEntity.ok(stats);
     }

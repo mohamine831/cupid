@@ -73,7 +73,7 @@ class CupidFetchServiceTest {
     private void setupMockData() {
         // Setup mock property data
         mockPropertyData = objectMapper.createObjectNode();
-        mockPropertyData.put("hotel_id", 12345L);
+        mockPropertyData.put("hotel_id", 1270324L);
         mockPropertyData.put("cupid_id", 67890L);
         mockPropertyData.put("hotel_name", "Test Hotel");
         mockPropertyData.put("hotel_type", "hotel");
@@ -115,7 +115,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_Success() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         when(propertyRepository.findById(hotelId)).thenReturn(Optional.empty());
@@ -139,7 +139,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_WithExistingProperty() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
         Property existingProperty = new Property();
         existingProperty.setHotelId(hotelId);
@@ -163,7 +163,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_ApiResponseNull() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         when(apiClient.fetchProperty(hotelId)).thenReturn(Mono.empty());
@@ -179,7 +179,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_TranslationError() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         when(propertyRepository.findById(hotelId)).thenReturn(Optional.empty());
@@ -202,7 +202,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_ReviewsError() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         when(propertyRepository.findById(hotelId)).thenReturn(Optional.empty());
@@ -224,7 +224,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_WithPhotos() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         ArrayNode photosArray = objectMapper.createArrayNode();
@@ -260,7 +260,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_WithFacilities() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         ArrayNode facilitiesArray = objectMapper.createArrayNode();
@@ -290,7 +290,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_WithRooms() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         ArrayNode roomsArray = objectMapper.createArrayNode();
@@ -326,7 +326,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_WithPolicies() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         ArrayNode policiesArray = objectMapper.createArrayNode();
@@ -357,7 +357,7 @@ class CupidFetchServiceTest {
     @Test
     void fetchAndSave_PropertyApiError() {
         // Given
-        long hotelId = 12345L;
+        long hotelId = 1270324L;
         int reviewsToFetch = 10;
 
         when(apiClient.fetchProperty(hotelId)).thenReturn(Mono.error(new RuntimeException("Property API Error")));

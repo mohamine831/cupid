@@ -50,7 +50,7 @@ class PropertyControllerTest {
         objectMapper = new ObjectMapper();
         
         testProperty = new Property();
-        testProperty.setHotelId(12345L);
+        testProperty.setHotelId(1270324L);
         testProperty.setName("Test Hotel");
         testProperty.setStars(4);
         testProperty.setRating(BigDecimal.valueOf(8.5));
@@ -61,7 +61,7 @@ class PropertyControllerTest {
     @Test
     void importList_Success() throws Exception {
         // Given
-        List<Long> hotelIds = Arrays.asList(12345L, 67890L);
+        List<Long> hotelIds = Arrays.asList(1270324L, 67890L);
         String requestBody = objectMapper.writeValueAsString(hotelIds);
 
         // When
@@ -79,10 +79,10 @@ class PropertyControllerTest {
     @Test
     void importList_WithErrors() throws Exception {
         // Given
-        List<Long> hotelIds = Arrays.asList(12345L, 67890L);
+        List<Long> hotelIds = Arrays.asList(1270324L, 67890L);
         String requestBody = objectMapper.writeValueAsString(hotelIds);
 
-        doNothing().when(fetchService).fetchAndSave(12345L, 10);
+        doNothing().when(fetchService).fetchAndSave(1270324L, 10);
         doThrow(new RuntimeException("Error")).when(fetchService).fetchAndSave(67890L, 10);
 
         // When
@@ -118,7 +118,7 @@ class PropertyControllerTest {
     @Test
     void importList_DefaultReviewsToFetch() throws Exception {
         // Given
-        List<Long> hotelIds = Arrays.asList(12345L);
+        List<Long> hotelIds = Arrays.asList(1270324L);
         String requestBody = objectMapper.writeValueAsString(hotelIds);
 
         // When
@@ -129,98 +129,98 @@ class PropertyControllerTest {
                 .andExpect(content().string("Imported 1 hotels"));
 
         // Then
-        verify(fetchService).fetchAndSave(12345L, 10); // Default value
+        verify(fetchService).fetchAndSave(1270324L, 10); // Default value
     }
 
     @Test
     void getProperty_Success() throws Exception {
         // Given
-        when(propertyRepository.findById(12345L)).thenReturn(Optional.of(testProperty));
+        when(propertyRepository.findById(1270324L)).thenReturn(Optional.of(testProperty));
 
         // When & Then
-        mockMvc.perform(get("/api/properties/12345"))
+        mockMvc.perform(get("/api/properties/1270324"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.hotelId").value(12345))
+                .andExpect(jsonPath("$.hotelId").value(1270324))
                 .andExpect(jsonPath("$.name").value("Test Hotel"))
                 .andExpect(jsonPath("$.stars").value(4))
                 .andExpect(jsonPath("$.rating").value(8.5))
                 .andExpect(jsonPath("$.reviewCount").value(100));
 
-        verify(propertyRepository).findById(12345L);
+        verify(propertyRepository).findById(1270324L);
     }
 
     @Test
     void getProperty_NotFound() throws Exception {
         // Given
-        when(propertyRepository.findById(12345L)).thenReturn(Optional.empty());
+        when(propertyRepository.findById(1270324L)).thenReturn(Optional.empty());
 
         // When & Then
-        mockMvc.perform(get("/api/properties/12345"))
+        mockMvc.perform(get("/api/properties/1270324"))
                 .andExpect(status().isNotFound());
 
-        verify(propertyRepository).findById(12345L);
+        verify(propertyRepository).findById(1270324L);
     }
 
     @Test
     void refreshProperty_Success() throws Exception {
         // Given
-        doNothing().when(fetchService).fetchAndSave(12345L, 20);
+        doNothing().when(fetchService).fetchAndSave(1270324L, 20);
 
         // When & Then
-        mockMvc.perform(post("/api/properties/12345/refresh")
+        mockMvc.perform(post("/api/properties/1270324/refresh")
                 .param("reviewsToFetch", "20"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("ok"));
 
-        verify(fetchService).fetchAndSave(12345L, 20);
+        verify(fetchService).fetchAndSave(1270324L, 20);
     }
 
     @Test
     void refreshProperty_DefaultReviewsToFetch() throws Exception {
         // Given
-        doNothing().when(fetchService).fetchAndSave(12345L, 20);
+        doNothing().when(fetchService).fetchAndSave(1270324L, 20);
 
         // When & Then
-        mockMvc.perform(post("/api/properties/12345/refresh"))
+        mockMvc.perform(post("/api/properties/1270324/refresh"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("ok"));
 
-        verify(fetchService).fetchAndSave(12345L, 20); // Default value
+        verify(fetchService).fetchAndSave(1270324L, 20); // Default value
     }
 
     @Test
     void refreshProperty_Error() throws Exception {
         // Given
-        doThrow(new RuntimeException("Service error")).when(fetchService).fetchAndSave(12345L, 20);
+        doThrow(new RuntimeException("Service error")).when(fetchService).fetchAndSave(1270324L, 20);
 
         // When & Then
-        mockMvc.perform(post("/api/properties/12345/refresh")
+        mockMvc.perform(post("/api/properties/1270324/refresh")
                 .param("reviewsToFetch", "20"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string("Error: Service error"));
 
-        verify(fetchService).fetchAndSave(12345L, 20);
+        verify(fetchService).fetchAndSave(1270324L, 20);
     }
 
     @Test
     void refreshProperty_CustomReviewsToFetch() throws Exception {
         // Given
-        doNothing().when(fetchService).fetchAndSave(12345L, 50);
+        doNothing().when(fetchService).fetchAndSave(1270324L, 50);
 
         // When & Then
-        mockMvc.perform(post("/api/properties/12345/refresh")
+        mockMvc.perform(post("/api/properties/1270324/refresh")
                 .param("reviewsToFetch", "50"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("ok"));
 
-        verify(fetchService).fetchAndSave(12345L, 50);
+        verify(fetchService).fetchAndSave(1270324L, 50);
     }
 
     // Direct method tests for better coverage
     @Test
     void importList_DirectMethod_Success() {
         // Given
-        List<Long> hotelIds = Arrays.asList(12345L, 67890L);
+        List<Long> hotelIds = Arrays.asList(1270324L, 67890L);
 
         // When
         ResponseEntity<?> response = propertyController.importList(hotelIds, 10);
@@ -234,8 +234,8 @@ class PropertyControllerTest {
     @Test
     void importList_DirectMethod_WithErrors() {
         // Given
-        List<Long> hotelIds = Arrays.asList(12345L, 67890L);
-        doNothing().when(fetchService).fetchAndSave(12345L, 10);
+        List<Long> hotelIds = Arrays.asList(1270324L, 67890L);
+        doNothing().when(fetchService).fetchAndSave(1270324L, 10);
         doThrow(new RuntimeException("Error")).when(fetchService).fetchAndSave(67890L, 10);
 
         // When
@@ -250,56 +250,56 @@ class PropertyControllerTest {
     @Test
     void getProperty_DirectMethod_Success() {
         // Given
-        when(propertyRepository.findById(12345L)).thenReturn(Optional.of(testProperty));
+        when(propertyRepository.findById(1270324L)).thenReturn(Optional.of(testProperty));
 
         // When
-        ResponseEntity<Property> response = propertyController.getProperty(12345L);
+        ResponseEntity<Property> response = propertyController.getProperty(1270324L);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(testProperty);
-        verify(propertyRepository).findById(12345L);
+        verify(propertyRepository).findById(1270324L);
     }
 
     @Test
     void getProperty_DirectMethod_NotFound() {
         // Given
-        when(propertyRepository.findById(12345L)).thenReturn(Optional.empty());
+        when(propertyRepository.findById(1270324L)).thenReturn(Optional.empty());
 
         // When
-        ResponseEntity<Property> response = propertyController.getProperty(12345L);
+        ResponseEntity<Property> response = propertyController.getProperty(1270324L);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isNull();
-        verify(propertyRepository).findById(12345L);
+        verify(propertyRepository).findById(1270324L);
     }
 
     @Test
     void refreshProperty_DirectMethod_Success() {
         // Given
-        doNothing().when(fetchService).fetchAndSave(12345L, 20);
+        doNothing().when(fetchService).fetchAndSave(1270324L, 20);
 
         // When
-        ResponseEntity<?> response = propertyController.refreshProperty(12345L, 20);
+        ResponseEntity<?> response = propertyController.refreshProperty(1270324L, 20);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo("ok");
-        verify(fetchService).fetchAndSave(12345L, 20);
+        verify(fetchService).fetchAndSave(1270324L, 20);
     }
 
     @Test
     void refreshProperty_DirectMethod_Error() {
         // Given
-        doThrow(new RuntimeException("Service error")).when(fetchService).fetchAndSave(12345L, 20);
+        doThrow(new RuntimeException("Service error")).when(fetchService).fetchAndSave(1270324L, 20);
 
         // When
-        ResponseEntity<?> response = propertyController.refreshProperty(12345L, 20);
+        ResponseEntity<?> response = propertyController.refreshProperty(1270324L, 20);
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody()).isEqualTo("Error: Service error");
-        verify(fetchService).fetchAndSave(12345L, 20);
+        verify(fetchService).fetchAndSave(1270324L, 20);
     }
 }

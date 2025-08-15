@@ -6,6 +6,7 @@ import com.example.cupid.entity.Property;
 import com.example.cupid.repository.PropertyRepository;
 import com.example.cupid.repository.ReviewRepository;
 import com.example.cupid.repository.PropertyTranslationRepository;
+import com.example.cupid.utils.TestDataBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,17 +54,13 @@ class PropertyServiceTest {
 
     @BeforeEach
     void setUp() {
-        testProperty = new Property();
-        testProperty.setHotelId(12345L);
-        testProperty.setName("Test Hotel");
-        testProperty.setStars(4);
-        testProperty.setRating(BigDecimal.valueOf(8.5));
-        testProperty.setReviewCount(100);
-        testProperty.setUpdatedAt(Instant.now());
+        testProperty = TestDataBuilder.createTestProperty(1270324L, "Test Hotel", "Test City", 4, BigDecimal.valueOf(8.5), 100);
 
+        // TODO: Consider creating a TestDataBuilder for DTOs to avoid this long constructor
         testPropertyDto = new PropertyDto(
-            12345L, null, "Test Hotel", null, null, null, null, null, null, null,
-            4, BigDecimal.valueOf(8.5), 100, null, null, null, null, null, null, null, null, null, null, null, null, null, null
+                1270324L, null, "Test Hotel", null, null, null, null, null, null, null,
+                4, BigDecimal.valueOf(8.5), 100, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null
         );
 
         pageable = PageRequest.of(0, 10);
@@ -83,7 +80,7 @@ class PropertyServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).getHotelId()).isEqualTo(12345L);
+        assertThat(result.getContent().get(0).getHotelId()).isEqualTo(1270324L);
         verify(propertyRepository).findAllWithBasicDetails(pageable);
         verify(mapper).toDto((Property) testProperty);
     }
@@ -101,67 +98,67 @@ class PropertyServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).isEmpty();
         verify(propertyRepository).findAllWithBasicDetails(pageable);
-        verify(mapper, never()).toDto(any());
+        verify(mapper, never()).toDto(any(Property.class));
     }
 
     @Test
     void getHotelById_Success() {
         // Given
-        when(propertyRepository.findByIdWithAllDetails(12345L)).thenReturn(Optional.of(testProperty));
+        when(propertyRepository.findByIdWithAllDetails(1270324L)).thenReturn(Optional.of(testProperty));
         when(mapper.toDto((Property) testProperty)).thenReturn(testPropertyDto);
 
         // When
-        Optional<PropertyDto> result = propertyService.getHotelById(12345L);
+        Optional<PropertyDto> result = propertyService.getHotelById(1270324L);
 
         // Then
         assertThat(result).isPresent();
-        assertThat(result.get().getHotelId()).isEqualTo(12345L);
-        verify(propertyRepository).findByIdWithAllDetails(12345L);
+        assertThat(result.get().getHotelId()).isEqualTo(1270324L);
+        verify(propertyRepository).findByIdWithAllDetails(1270324L);
         verify(mapper).toDto((Property) testProperty);
     }
 
     @Test
     void getHotelById_NotFound() {
         // Given
-        when(propertyRepository.findByIdWithAllDetails(12345L)).thenReturn(Optional.empty());
+        when(propertyRepository.findByIdWithAllDetails(1270324L)).thenReturn(Optional.empty());
 
         // When
-        Optional<PropertyDto> result = propertyService.getHotelById(12345L);
+        Optional<PropertyDto> result = propertyService.getHotelById(1270324L);
 
         // Then
         assertThat(result).isEmpty();
-        verify(propertyRepository).findByIdWithAllDetails(12345L);
-        verify(mapper, never()).toDto(any());
+        verify(propertyRepository).findByIdWithAllDetails(1270324L);
+        verify(mapper, never()).toDto(any(Property.class));
     }
 
     @Test
     void getHotelByHotelId_Success() {
         // Given
-        when(propertyRepository.findByHotelId(12345L)).thenReturn(Optional.of(testProperty));
+        when(propertyRepository.findByHotelId(1270324L)).thenReturn(Optional.of(testProperty));
         when(mapper.toDto((Property) testProperty)).thenReturn(testPropertyDto);
 
         // When
-        Optional<PropertyDto> result = propertyService.getHotelByHotelId(12345L);
+        Optional<PropertyDto> result = propertyService.getHotelByHotelId(1270324L);
 
         // Then
         assertThat(result).isPresent();
-        assertThat(result.get().getHotelId()).isEqualTo(12345L);
-        verify(propertyRepository).findByHotelId(12345L);
+        assertThat(result.get().getHotelId()).isEqualTo(1270324L);
+        verify(propertyRepository).findByHotelId(1270324L);
         verify(mapper).toDto((Property) testProperty);
     }
 
     @Test
     void getHotelByHotelId_NotFound() {
         // Given
-        when(propertyRepository.findByHotelId(12345L)).thenReturn(Optional.empty());
+        when(propertyRepository.findByHotelId(1270324L)).thenReturn(Optional.empty());
 
         // When
-        Optional<PropertyDto> result = propertyService.getHotelByHotelId(12345L);
+        Optional<PropertyDto> result = propertyService.getHotelByHotelId(1270324L);
 
         // Then
         assertThat(result).isEmpty();
-        verify(propertyRepository).findByHotelId(12345L);
-        verify(mapper, never()).toDto(any());
+        verify(propertyRepository).findByHotelId(1270324L);
+        verify(mapper, never()).toDto(any(Property.class));
     }
 
     @Test
@@ -178,7 +175,7 @@ class PropertyServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getHotelId()).isEqualTo(12345L);
+        assertThat(result.get(0).getHotelId()).isEqualTo(1270324L);
         verify(propertyRepository).searchByNameAndCityNative("%Hotel%", "%Paris%");
         verify(propertyRepository, never()).searchByNameAndCity(anyString(), anyString());
         verify(mapper).toDto((Property) testProperty);
@@ -198,7 +195,7 @@ class PropertyServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getHotelId()).isEqualTo(12345L);
+        assertThat(result.get(0).getHotelId()).isEqualTo(1270324L);
         verify(propertyRepository).searchByNameAndCity("%Hotel%", null);
         verify(propertyRepository, never()).searchByNameAndCityNative(anyString(), anyString());
         verify(mapper).toDto(testProperty);
@@ -235,7 +232,7 @@ class PropertyServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getHotelId()).isEqualTo(12345L);
+        assertThat(result.get(0).getHotelId()).isEqualTo(1270324L);
         verify(propertyRepository).searchByName("%Hotel%");
         verify(mapper).toDto(testProperty);
     }
@@ -252,13 +249,13 @@ class PropertyServiceTest {
         // Then
         assertThat(result).isEmpty();
         verify(propertyRepository).searchByName("%NonExistent%");
-        verify(mapper, never()).toDto(any());
+        verify(mapper, never()).toDto(any(Property.class));
     }
 
     @Test
     void getHotelReviews_ReturnsEmptyList() {
         // Given
-        Long hotelId = 12345L;
+        Long hotelId = 1270324L;
 
         // When
         List<PropertyDto> result = propertyService.getHotelReviews(hotelId);
@@ -270,7 +267,7 @@ class PropertyServiceTest {
     @Test
     void getHotelTranslations_ReturnsEmptyList() {
         // Given
-        Long hotelId = 12345L;
+        Long hotelId = 1270324L;
 
         // When
         List<PropertyDto> result = propertyService.getHotelTranslations(hotelId);
@@ -282,7 +279,8 @@ class PropertyServiceTest {
     @Test
     void refreshProperty_Success() {
         // Given
-        Long hotelId = 12345L;
+        Long hotelId = 1270324L;
+        doNothing().when(cacheService).evictRelatedCaches(any(String[].class));
 
         // When
         propertyService.refreshProperty(hotelId);
@@ -294,7 +292,7 @@ class PropertyServiceTest {
     @Test
     void updateProperty_Success() {
         // Given
-        Long hotelId = 12345L;
+        Long hotelId = 1270324L;
 
         // When
         propertyService.updateProperty(hotelId);
@@ -307,6 +305,8 @@ class PropertyServiceTest {
     @Test
     void clearAllCaches_Success() {
         // Given
+        doNothing().when(cacheService).evictRelatedCaches(any(String[].class));
+        
         // When
         propertyService.clearAllCaches();
 

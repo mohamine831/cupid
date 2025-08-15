@@ -156,11 +156,11 @@ A utility class that provides factory methods for creating consistent test data:
 ```java
 // Create a test property
 Property property = TestDataBuilder.createTestProperty(
-    12345L, "Test Hotel", "Paris", 4, BigDecimal.valueOf(8.5), 100
+    1270324L, "Test Hotel", "Paris", 4, BigDecimal.valueOf(8.5), 100
 );
 
 // Create mock JSON responses
-JsonNode propertyData = TestDataBuilder.createMockPropertyJsonNode(12345L, "Test Hotel");
+JsonNode propertyData = TestDataBuilder.createMockPropertyJsonNode(1270324L, "Test Hotel");
 JsonNode reviewsData = TestDataBuilder.createMockReviewsJsonNode();
 ```
 
@@ -185,10 +185,10 @@ void methodName_Scenario_ExpectedResult() {
 @Test
 void getProperty_Success() {
     // Arrange
-    when(repository.findById(12345L)).thenReturn(Optional.of(property));
+    when(repository.findById(1270324L)).thenReturn(Optional.of(property));
     
     // Act
-    ResponseEntity<Property> response = controller.getProperty(12345L);
+    ResponseEntity<Property> response = controller.getProperty(1270324L);
     
     // Assert
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

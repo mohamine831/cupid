@@ -1,13 +1,17 @@
 package com.example.cupid.controller;
 
+import com.example.cupid.config.TestServiceConfig;
 import com.example.cupid.entity.Property;
 import com.example.cupid.repository.PropertyRepository;
+import com.example.cupid.service.CupidFetchService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +25,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,6 +44,9 @@ class PropertyControllerIntegrationTest {
     @Autowired
     private PropertyRepository propertyRepository;
 
+    @MockBean
+    private CupidFetchService cupidFetchService;
+
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
     private Property testProperty;
@@ -47,7 +58,7 @@ class PropertyControllerIntegrationTest {
         
         // Create test property
         testProperty = new Property();
-        testProperty.setHotelId(12345L);
+        testProperty.setHotelId(1270324L);
         testProperty.setName("Test Hotel");
         testProperty.setStars(4);
         testProperty.setRating(BigDecimal.valueOf(8.5));
@@ -56,14 +67,22 @@ class PropertyControllerIntegrationTest {
         
         // Save to database
         propertyRepository.save(testProperty);
+        
+        // Setup CupidFetchService mock behavior
+        // Default behavior: do nothing (success case)
+        doNothing().when(cupidFetchService).fetchAndSave(anyLong(), anyInt());
+        
+        // For the refreshProperty_NotFound test, throw an exception for hotel ID 986622
+        doThrow(new RuntimeException("Hotel not found"))
+            .when(cupidFetchService).fetchAndSave(eq(986622L), anyInt());
     }
 
     @Test
     void getProperty_Success() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/properties/12345"))
+        mockMvc.perform(get("/api/properties/1270324"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.hotelId").value(12345))
+                .andExpect(jsonPath("$.hotelId").value(1270324L))
                 .andExpect(jsonPath("$.name").value("Test Hotel"))
                 .andExpect(jsonPath("$.stars").value(4))
                 .andExpect(jsonPath("$.rating").value(8.5))
@@ -73,7 +92,7 @@ class PropertyControllerIntegrationTest {
     @Test
     void getProperty_NotFound() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/properties/99999"))
+        mockMvc.perform(get("/api/properties/986622"))
                 .andExpect(status().isNotFound());
     }
 
@@ -87,7 +106,7 @@ class PropertyControllerIntegrationTest {
     @Test
     void importList_Success() throws Exception {
         // Given
-        List<Long> hotelIds = Arrays.asList(12345L, 67890L);
+        List<Long> hotelIds = Arrays.asList(1270324L, 67890L);
         String requestBody = objectMapper.writeValueAsString(hotelIds);
 
         // When & Then
@@ -117,7 +136,7 @@ class PropertyControllerIntegrationTest {
     @Test
     void importList_DefaultReviewsToFetch() throws Exception {
         // Given
-        List<Long> hotelIds = Arrays.asList(12345L);
+        List<Long> hotelIds = Arrays.asList(1270324L);
         String requestBody = objectMapper.writeValueAsString(hotelIds);
 
         // When & Then
@@ -144,7 +163,7 @@ class PropertyControllerIntegrationTest {
     @Test
     void refreshProperty_Success() throws Exception {
         // When & Then
-        mockMvc.perform(post("/api/properties/12345/refresh")
+        mockMvc.perform(post("/api/properties/1270324/refresh")
                 .param("reviewsToFetch", "20"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("ok"));
@@ -153,7 +172,7 @@ class PropertyControllerIntegrationTest {
     @Test
     void refreshProperty_DefaultReviewsToFetch() throws Exception {
         // When & Then
-        mockMvc.perform(post("/api/properties/12345/refresh"))
+        mockMvc.perform(post("/api/properties/1270324/refresh"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("ok"));
     }
@@ -161,7 +180,7 @@ class PropertyControllerIntegrationTest {
     @Test
     void refreshProperty_NotFound() throws Exception {
         // When & Then
-        mockMvc.perform(post("/api/properties/99999/refresh")
+        mockMvc.perform(post("/api/properties/986622/refresh")
                 .param("reviewsToFetch", "20"))
                 .andExpect(status().isInternalServerError());
     }
@@ -177,7 +196,7 @@ class PropertyControllerIntegrationTest {
     @Test
     void refreshProperty_InvalidReviewsToFetch() throws Exception {
         // When & Then
-        mockMvc.perform(post("/api/properties/12345/refresh")
+        mockMvc.perform(post("/api/properties/1270324L/refresh")
                 .param("reviewsToFetch", "invalid"))
                 .andExpect(status().isBadRequest());
     }

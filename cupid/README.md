@@ -5,7 +5,7 @@ Minimal Spring Boot project that fetches property details, translations (fr/es),
 Quick start (local PostgreSQL expected):
 
 1. Configure `src/main/resources/application.yml` with your DB credentials and Cupid API key (the provided sandbox key is pre-filled).
-2. `mvn clean package`
+2. `mvn package`
 3. `java -jar target/cupid-spring-backend-0.0.1-SNAPSHOT.jar`
 
 Endpoints:

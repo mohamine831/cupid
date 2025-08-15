@@ -3,16 +3,14 @@ package com.example.cupid.controller;
 import com.example.cupid.service.CacheService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,26 +22,32 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(CacheController.class)
 class CacheControllerTest {
 
-    @Mock
+    @MockBean
     private CacheManager cacheManager;
 
-    @Mock
+    @MockBean
     private CacheService cacheService;
 
-    @Mock
+    @MockBean
     private Cache cache;
 
-    @InjectMocks
+    @Autowired
     private CacheController cacheController;
 
+    @Autowired
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(cacheController).build();
+        // Reset all mocks before each test to ensure clean state
+        reset(cacheManager, cacheService, cache);
+        
+        // Set up default cache mock behavior
+        when(cache.getName()).thenReturn("testCache");
+        when(cache.getNativeCache()).thenReturn(new HashMap<>());
     }
 
     @Test
@@ -145,7 +149,9 @@ class CacheControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalCaches").value(3))
                 .andExpect(jsonPath("$.cacheNames").isArray())
-                .andExpect(jsonPath("$.cacheNames").value(Arrays.asList("properties", "hotels", "reviews")));
+                .andExpect(jsonPath("$.cacheNames[0]").value("properties"))
+                .andExpect(jsonPath("$.cacheNames[1]").value("hotels"))
+                .andExpect(jsonPath("$.cacheNames[2]").value("reviews"));
 
         verify(cacheManager).getCacheNames();
     }
@@ -160,7 +166,7 @@ class CacheControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalCaches").value(0))
                 .andExpect(jsonPath("$.cacheNames").isArray())
-                .andExpect(jsonPath("$.cacheNames").value(Arrays.asList()));
+                .andExpect(jsonPath("$.cacheNames").isEmpty());
 
         verify(cacheManager).getCacheNames();
     }

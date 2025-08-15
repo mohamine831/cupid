@@ -237,7 +237,7 @@ public class TestDataBuilder {
 
     public static List<Property> createTestPropertyList() {
         List<Property> properties = new ArrayList<>();
-        properties.add(createTestProperty(12345L, "Test Hotel 1", "Paris", 4, BigDecimal.valueOf(8.5), 100));
+        properties.add(createTestProperty(1270324L, "Test Hotel 1", "Paris", 4, BigDecimal.valueOf(8.5), 100));
         properties.add(createTestProperty(67890L, "Test Hotel 2", "London", 5, BigDecimal.valueOf(9.0), 200));
         properties.add(createTestProperty(11111L, "Another Hotel", "Paris", 3, BigDecimal.valueOf(7.5), 50));
         return properties;

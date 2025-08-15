@@ -105,6 +105,7 @@ public class PropertyService {
         log.info("Refreshing property with hotel ID: {}", hotelId);
         // This method would trigger a refresh of the property data
         // and evict all related caches
+        cacheService.evictRelatedCaches("properties", "hotels", "reviews", "translations");
     }
 
     @Transactional

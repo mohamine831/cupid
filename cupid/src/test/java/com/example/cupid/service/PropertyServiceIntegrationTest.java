@@ -55,8 +55,8 @@ class PropertyServiceIntegrationTest {
         // Clear cache before each test
         cacheService.evictRelatedCaches("properties", "hotels", "reviews", "translations");
 
-        // Create test properties
-        testProperty1 = createTestProperty(12345L, "Test Hotel 1", "Paris", 4, BigDecimal.valueOf(8.5), 100);
+        // Create test properties with minimal required fields
+        testProperty1 = createTestProperty(1270324L, "Test Hotel 1", "Paris", 4, BigDecimal.valueOf(8.5), 100);
         testProperty2 = createTestProperty(67890L, "Test Hotel 2", "London", 5, BigDecimal.valueOf(9.0), 200);
         testProperty3 = createTestProperty(11111L, "Another Hotel", "Paris", 3, BigDecimal.valueOf(7.5), 50);
 
@@ -79,6 +79,14 @@ class PropertyServiceIntegrationTest {
         String addressJson = String.format("{\"city\": \"%s\", \"country\": \"Test Country\"}", city);
         property.setAddressJson(addressJson);
         
+        // Initialize empty lists to avoid null pointer issues
+        property.setPhotos(List.of());
+        property.setFacilities(List.of());
+        property.setRooms(List.of());
+        property.setPolicies(List.of());
+        property.setReviews(List.of());
+        property.setTranslations(List.of());
+        
         return property;
     }
 
@@ -98,7 +106,7 @@ class PropertyServiceIntegrationTest {
         
         // Verify properties are mapped correctly
         List<PropertyDto> properties = result.getContent();
-        assertThat(properties).anyMatch(p -> p.getHotelId().equals(12345L) && p.getName().equals("Test Hotel 1"));
+        assertThat(properties).anyMatch(p -> p.getHotelId().equals(1270324L) && p.getName().equals("Test Hotel 1"));
         assertThat(properties).anyMatch(p -> p.getHotelId().equals(67890L) && p.getName().equals("Test Hotel 2"));
         assertThat(properties).anyMatch(p -> p.getHotelId().equals(11111L) && p.getName().equals("Another Hotel"));
     }
@@ -136,12 +144,12 @@ class PropertyServiceIntegrationTest {
     @Test
     void getHotelById_Success() {
         // When
-        Optional<PropertyDto> result = propertyService.getHotelById(12345L);
+        Optional<PropertyDto> result = propertyService.getHotelById(1270324L);
 
         // Then
         assertThat(result).isPresent();
         PropertyDto property = result.get();
-        assertThat(property.getHotelId()).isEqualTo(12345L);
+        assertThat(property.getHotelId()).isEqualTo(1270324L);
         assertThat(property.getName()).isEqualTo("Test Hotel 1");
         assertThat(property.getStars()).isEqualTo(4);
         assertThat(property.getRating()).isEqualTo(BigDecimal.valueOf(8.5));
@@ -151,7 +159,7 @@ class PropertyServiceIntegrationTest {
     @Test
     void getHotelById_NotFound() {
         // When
-        Optional<PropertyDto> result = propertyService.getHotelById(99999L);
+        Optional<PropertyDto> result = propertyService.getHotelById(986622L);
 
         // Then
         assertThat(result).isEmpty();
@@ -160,19 +168,19 @@ class PropertyServiceIntegrationTest {
     @Test
     void getHotelByHotelId_Success() {
         // When
-        Optional<PropertyDto> result = propertyService.getHotelByHotelId(12345L);
+        Optional<PropertyDto> result = propertyService.getHotelByHotelId(1270324L);
 
         // Then
         assertThat(result).isPresent();
         PropertyDto property = result.get();
-        assertThat(property.getHotelId()).isEqualTo(12345L);
+        assertThat(property.getHotelId()).isEqualTo(1270324L);
         assertThat(property.getName()).isEqualTo("Test Hotel 1");
     }
 
     @Test
     void getHotelByHotelId_NotFound() {
         // When
-        Optional<PropertyDto> result = propertyService.getHotelByHotelId(99999L);
+        Optional<PropertyDto> result = propertyService.getHotelByHotelId(986622L);
 
         // Then
         assertThat(result).isEmpty();
@@ -242,7 +250,7 @@ class PropertyServiceIntegrationTest {
     @Test
     void getHotelReviews_ReturnsEmptyList() {
         // When
-        List<PropertyDto> result = propertyService.getHotelReviews(12345L);
+        List<PropertyDto> result = propertyService.getHotelReviews(1270324L);
 
         // Then
         assertThat(result).isEmpty();
@@ -251,7 +259,7 @@ class PropertyServiceIntegrationTest {
     @Test
     void getHotelTranslations_ReturnsEmptyList() {
         // When
-        List<PropertyDto> result = propertyService.getHotelTranslations(12345L);
+        List<PropertyDto> result = propertyService.getHotelTranslations(1270324L);
 
         // Then
         assertThat(result).isEmpty();
@@ -260,7 +268,7 @@ class PropertyServiceIntegrationTest {
     @Test
     void refreshProperty_Success() {
         // When
-        propertyService.refreshProperty(12345L);
+        propertyService.refreshProperty(1270324L);
 
         // Then
         // Method should complete without throwing exception
@@ -270,7 +278,7 @@ class PropertyServiceIntegrationTest {
     @Test
     void updateProperty_Success() {
         // When
-        propertyService.updateProperty(12345L);
+        propertyService.updateProperty(1270324L);
 
         // Then
         // Method should complete without throwing exception
@@ -311,22 +319,22 @@ class PropertyServiceIntegrationTest {
     @Test
     void databaseTransaction_Integration() {
         // Given
-        Property newProperty = createTestProperty(99999L, "Transaction Test Hotel", "Berlin", 4, BigDecimal.valueOf(8.0), 75);
+        Property newProperty = createTestProperty(986622L, "Transaction Test Hotel", "Berlin", 4, BigDecimal.valueOf(8.0), 75);
 
         // When
         Property savedProperty = propertyRepository.save(newProperty);
         
         // Then
         assertThat(savedProperty).isNotNull();
-        assertThat(savedProperty.getHotelId()).isEqualTo(99999L);
+        assertThat(savedProperty.getHotelId()).isEqualTo(986622L);
 
         // Verify it can be retrieved
-        Optional<Property> retrievedProperty = propertyRepository.findById(99999L);
+        Optional<Property> retrievedProperty = propertyRepository.findById(986622L);
         assertThat(retrievedProperty).isPresent();
         assertThat(retrievedProperty.get().getName()).isEqualTo("Transaction Test Hotel");
 
         // Test service method with new property
-        Optional<PropertyDto> serviceResult = propertyService.getHotelById(99999L);
+        Optional<PropertyDto> serviceResult = propertyService.getHotelById(986622L);
         assertThat(serviceResult).isPresent();
         assertThat(serviceResult.get().getName()).isEqualTo("Transaction Test Hotel");
     }
